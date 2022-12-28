@@ -1,0 +1,8 @@
+with total_records as (
+  select count(*) as total from table_name),
+  ind as (
+    select tr.total, case when tr.total%2=0 then (tr.total/2+1)/2 else floor(tr.total/2)+1 end as index from total_records as tr),
+table_with_row_numbers as (
+select *, row_number() over(order by column_name) as rn from table_name)
+
+select round(avg(column_name), 4) from table_with_row_numbers where rn in (select ceil(index) from total_records) or rn in (select floor(index) from total_records);
