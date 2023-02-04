@@ -1,0 +1,31 @@
+-- Hi, this is the hard level hacker-rank sql question
+-- Question name: Interviews
+-- I have solved this using the common-table-expression
+
+
+with cte as (
+select challenge_id, sum(total_submissions) as total_submissions,
+    sum(total_accepted_submissions) as total_accepted_submissions
+    from Submission_Stats group by challenge_id
+),
+cte2 as (
+select challenge_id, sum(total_views) as total_views, sum(total_unique_views) as total_unique_views from View_Stats group by challenge_id
+),
+cte3 as (
+select c1.college_id, sum(c2.total_views) as total_views, sum(c2.total_unique_views) as total_unique_views,
+    sum(c3.total_submissions) as total_submissions, sum(c3.total_accepted_submissions) as total_accepted_submissions from Challenges c1
+    left join cte2 c2 on c1.challenge_id = c2.challenge_id
+    left join cte c3 on c1.challenge_id = c3.challenge_id
+    group by c1.college_id 
+),
+cte4 as (
+select c1.contest_id, c1.hacker_id, c1.name, c3.total_submissions, 
+    c3.total_accepted_submissions, c3.total_views, c3.total_unique_views
+    from Contests c1 inner join Colleges c2
+    on c1.contest_id = c2.contest_id
+    inner join cte3 c3 on c3.college_id = c2.college_id
+    where (c3.total_views + c3.total_unique_views + c3.total_submissions + c3.total_accepted_submissions) <> 0
+)
+
+select contest_id, hacker_id, name, sum(total_submissions) as total_submissions, sum(total_accepted_submissions) as total_accepted_submissions,
+sum(total_views) as total_views, sum(total_unique_views) as total_unique_views from cte4 group by contest_id, hacker_id, name order by contest_id;
